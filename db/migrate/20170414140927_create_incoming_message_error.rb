@@ -3,7 +3,7 @@ class CreateIncomingMessageError < ActiveRecord::Migration
   def change
     create_table :incoming_message_errors do |t|
       t.timestamps null: false
-      t.text :unique_id, null: false
+      t.string :unique_id, null: false
       t.datetime :retry_at
     end
 
