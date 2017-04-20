@@ -27,11 +27,13 @@ class AlaveteliMailPoller
   end
 
   def self.poll_for_incoming_loop
-    # Run poll_for_incoming in an endless loop, sleeping when there is
-    # nothing to do
+
+    # Make a poller and run poll_for_incoming in an endless loop,
+    # sleeping when there is nothing to do
+    poller = new
     while true
       sleep_seconds = 1
-      while !poll_for_incoming
+      while !poller.poll_for_incoming
         sleep sleep_seconds
         sleep_seconds *= 2
         sleep_seconds = 300 if sleep_seconds > 300
