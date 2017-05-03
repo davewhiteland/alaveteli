@@ -57,7 +57,8 @@ class AlaveteliMailPoller
       end
     rescue Net::POPError, StandardError => error
       if send_exception_notifications?
-        ExceptionNotifier.notify_exception(error, :data => { :mail => raw_email })
+        ExceptionNotifier.notify_exception(error, :data => { :mail => raw_email,
+                                                             :unique_id => unique_id })
       end
       record_error(unique_id, received)
     end
