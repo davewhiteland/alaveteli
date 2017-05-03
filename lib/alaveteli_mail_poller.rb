@@ -19,8 +19,8 @@ class AlaveteliMailPoller
     found_mail = false
     start do |pop3|
       pop3.each_mail do |popmail|
-        found_mail = true
-        get_mail(popmail)
+        received = get_mail(popmail)
+        found_mail = found_mail || received
       end
     end
     found_mail
@@ -62,6 +62,7 @@ class AlaveteliMailPoller
       end
       record_error(unique_id, received, error)
     end
+    received
   end
 
   def record_error(unique_id, received, error)
