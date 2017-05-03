@@ -81,7 +81,9 @@ class AlaveteliMailPoller
   def retry?(unique_id)
     incoming_message_error = IncomingMessageError.
       where(unique_id: unique_id).take
-    incoming_message_error && incoming_message_error.retry_at < Time.zone.now
+    incoming_message_error &&
+    incoming_message_error.retry_at &&
+    incoming_message_error.retry_at < Time.zone.now
   end
 
   def retrieve?(unique_id)
