@@ -6,11 +6,11 @@ class AlaveteliMailPoller
   attr_accessor :settings, :failed_mails
 
   def initialize(values = {})
-    defaults = { :address      => AlaveteliConfiguration.pop_mailer_address,
-                 :port         => AlaveteliConfiguration.pop_mailer_port,
-                 :user_name    => AlaveteliConfiguration.pop_mailer_user_name,
-                 :password     => AlaveteliConfiguration.pop_mailer_password,
-                 :enable_ssl   => AlaveteliConfiguration.pop_mailer_enable_ssl }
+    defaults = { address:      AlaveteliConfiguration.pop_mailer_address,
+                 port:         AlaveteliConfiguration.pop_mailer_port,
+                 user_name:    AlaveteliConfiguration.pop_mailer_user_name,
+                 password:     AlaveteliConfiguration.pop_mailer_password,
+                 enable_ssl:   AlaveteliConfiguration.pop_mailer_enable_ssl }
     self.settings = defaults.merge(values)
     self.failed_mails = {}
   end
@@ -57,8 +57,8 @@ class AlaveteliMailPoller
       end
     rescue Net::POPError, StandardError => error
       if send_exception_notifications?
-        ExceptionNotifier.notify_exception(error, :data => { :mail => raw_email,
-                                                             :unique_id => unique_id })
+        ExceptionNotifier.notify_exception(error, :data => { mail: raw_email,
+                                                             unique_id: unique_id })
       end
       record_error(unique_id, received, error)
     end
