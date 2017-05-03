@@ -67,9 +67,10 @@ class AlaveteliMailPoller
   def record_error(unique_id, received, error)
     if unique_id
       retry_at = received ? nil : Time.zone.now + 30.minutes
-      IncomingMessageError.create!(unique_id: unique_id,
-                                   retry_at: retry_at,
-                                   backtrace: error.backtrace.join("\n"))
+      ime = IncomingMessageError.find_or_create_by!(unique_id: unique_id)
+      ime.retry_at = retry_at
+      ime.backtrace = error.backtrace.join("\n")
+      ime.save!
     end
   end
 
