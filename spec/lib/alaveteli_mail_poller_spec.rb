@@ -76,14 +76,37 @@ describe AlaveteliMailPoller do
             to eq('[ERROR] (Net::POPError) "Error code"')
         end
 
-        it 'stores the unique ID with a time of 30 minutes from now' do
-          poller.poll_for_incoming
-          errors = IncomingMessageError.
-                     where(unique_id: mockpop3.mails.first.unique_id)
-          expect(errors.size).to eq(1)
-          incoming_message_error = errors.first
-          expect(incoming_message_error.retry_at).
-            to be_within(5.seconds).of(Time.zone.now + 30.minutes)
+        context 'if there is already an error for this mail' do
+
+           it 'updates the error for the unique ID with a time of
+              30 minutes from now' do
+            error = IncomingMessageError.
+                      create(unique_id: mockpop3.mails.first.unique_id,
+                             retry_at: Time.zone.now)
+            poller.poll_for_incoming
+            errors = IncomingMessageError.
+                       where(unique_id: mockpop3.mails.first.unique_id)
+            expect(errors.size).to eq(1)
+            incoming_message_error = errors.first
+            expect(incoming_message_error.retry_at).
+              to be_within(5.seconds).of(Time.zone.now + 30.minutes)
+          end
+
+        end
+
+        context 'if there is no error for this mail' do
+
+          it 'stores the error for the unique ID with a time of 30
+              minutes from now' do
+            poller.poll_for_incoming
+            errors = IncomingMessageError.
+                       where(unique_id: mockpop3.mails.first.unique_id)
+            expect(errors.size).to eq(1)
+            incoming_message_error = errors.first
+            expect(incoming_message_error.retry_at).
+              to be_within(5.seconds).of(Time.zone.now + 30.minutes)
+          end
+
         end
 
       end
@@ -152,6 +175,19 @@ describe AlaveteliMailPoller do
 
           before do
             IncomingMessageError.create!(unique_id: mockpop3.mails.first.unique_id)
+          end
+
+          it 'does not send it to RequestMailer.receive' do
+            expect(RequestMailer).not_to receive(:receive)
+            poller.poll_for_incoming
+          end
+
+        end
+
+        context 'and the mail has no retry time' do
+          before do
+            IncomingMessageError.create!(unique_id: mockpop3.mails.first.unique_id,
+                                         retry_at: nil)
           end
 
           it 'does not send it to RequestMailer.receive' do
