@@ -60,15 +60,16 @@ class AlaveteliMailPoller
         ExceptionNotifier.notify_exception(error, :data => { :mail => raw_email,
                                                              :unique_id => unique_id })
       end
-      record_error(unique_id, received)
+      record_error(unique_id, received, error)
     end
   end
 
-  def record_error(unique_id, received)
+  def record_error(unique_id, received, error)
     if unique_id
       retry_at = received ? nil : Time.zone.now + 30.minutes
       IncomingMessageError.create!(unique_id: unique_id,
-                                   retry_at: retry_at)
+                                   retry_at: retry_at,
+                                   backtrace: error.backtrace.join("\n"))
     end
   end
 

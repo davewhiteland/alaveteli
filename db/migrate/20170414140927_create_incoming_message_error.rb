@@ -5,6 +5,7 @@ class CreateIncomingMessageError < ActiveRecord::Migration
       t.timestamps null: false
       t.string :unique_id, null: false
       t.datetime :retry_at
+      t.text :backtrace
     end
 
     add_index :incoming_message_errors, :unique_id
