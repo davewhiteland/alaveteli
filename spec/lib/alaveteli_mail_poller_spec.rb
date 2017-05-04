@@ -182,17 +182,8 @@ describe AlaveteliMailPoller do
             poller.poll_for_incoming
           end
 
-        end
-
-        context 'and the mail has no retry time' do
-          before do
-            IncomingMessageError.create!(unique_id: mockpop3.mails.first.unique_id,
-                                         retry_at: nil)
-          end
-
-          it 'does not send it to RequestMailer.receive' do
-            expect(RequestMailer).not_to receive(:receive)
-            poller.poll_for_incoming
+          it 'returns false' do
+            expect(poller.poll_for_incoming).to be false
           end
 
         end
@@ -209,6 +200,10 @@ describe AlaveteliMailPoller do
             poller.poll_for_incoming
           end
 
+          it 'returns false' do
+            expect(poller.poll_for_incoming).to be false
+          end
+
         end
 
         context 'and the mail has reached its retry time' do
@@ -223,6 +218,11 @@ describe AlaveteliMailPoller do
               with mockpop3.mails.first.pop
             poller.poll_for_incoming
           end
+
+          it 'returns true' do
+            expect(poller.poll_for_incoming).to be true
+          end
+
         end
       end
     end
