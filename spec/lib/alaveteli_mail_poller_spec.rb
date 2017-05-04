@@ -136,6 +136,10 @@ describe AlaveteliMailPoller do
             to eq('[ERROR] (ActiveRecord::StatementInvalid) "Deadlock"')
         end
 
+        it 'returns false' do
+          expect(poller.poll_for_incoming).to be false
+        end
+
       end
 
       context 'if there is an error deleting the mail' do
@@ -164,6 +168,10 @@ describe AlaveteliMailPoller do
           exception_notification =  ActionMailer::Base.deliveries.second
           expect(exception_notification.subject).
             to eq('[ERROR] (Net::POPError) "Error code"')
+        end
+
+        it 'returns true' do
+          expect(poller.poll_for_incoming).to be true
         end
 
       end
