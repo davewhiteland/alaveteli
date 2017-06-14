@@ -179,6 +179,23 @@ describe PublicBody do
 
   end
 
+  describe '#last_edit_comment' do
+
+    it 'is invalid when nil' do
+      subject = PublicBody.new(:last_edit_comment => nil)
+      subject.valid?
+      expect(subject.errors[:last_edit_comment]).
+        to eq(["Last edit comment can't be blank"])
+    end
+
+    it 'is valid when blank' do
+      subject = PublicBody.new(:last_edit_comment => '')
+      subject.valid?
+      expect(subject.errors[:last_edit_comment]).to be_empty
+    end
+
+  end
+
   describe '#translations_attributes=' do
 
     context 'translation_attrs is a Hash' do
