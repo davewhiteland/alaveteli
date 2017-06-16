@@ -1,13 +1,16 @@
-#develop
+# develop
 
 ## Highlighted Features
 
+* Improve public body data validations (Gareth Rees)
 * Admin timeline can now show events filtered by type (Louise Crow)
 
 ## Upgrade Notes
 
 * Run `bundle exec rake temp:populate_last_event_time` after deployment to populate
   the cached `last_event_time` attribute on info_requests, used in the admin interface.
+
+### Changed Templates
 
 # 0.29.0.0
 
