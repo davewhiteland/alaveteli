@@ -311,32 +311,65 @@ describe InfoRequest do
     describe 'notifying the request owner' do
 
       context 'when the request has use_notifications: true' do
-        it 'notifies the user that a response has been received' do
-          info_request = FactoryGirl.create(:info_request,
-                                            use_notifications: true)
+        let(:info_request) do
+          FactoryGirl.create(:info_request, use_notifications: true)
+        end
+
+        it 'notifies the user regardless of the :notifications feature' do
           email, raw_email = email_and_raw_email
 
           # Without this, the user retrieved in the model is not the same one
           # in memory as this one, so we can't put expectations on it
           allow(info_request).to receive(:user).and_return(info_request.user)
           expect(info_request.user).
-            to receive(:notify).with(a_new_response_event_for(info_request))
+            to receive(:notify).
+              with(a_new_response_event_for(info_request)).
+                twice
 
+          AlaveteliFeatures.backend.enable_actor(:notifications,
+                                                 info_request.user)
+          info_request.receive(email, raw_email)
+
+          AlaveteliFeatures.backend.disable_actor(:notifications,
+                                                  info_request.user)
           info_request.receive(email, raw_email)
         end
       end
 
       context 'when the request has use_notifications: false' do
-        it 'emails the user that a response has been received' do
-          info_request = FactoryGirl.create(:info_request,
-                                            use_notifications: false)
-          email, raw_email = email_and_raw_email
+        let(:info_request) do
+          FactoryGirl.create(:info_request, use_notifications: false)
+        end
 
-          info_request.receive(email, raw_email)
-          notification = ActionMailer::Base.deliveries.last
-          expect(notification.to).to include(info_request.user.email)
-          expect(ActionMailer::Base.deliveries.size).to eq(1)
-          ActionMailer::Base.deliveries.clear
+        context 'and the user has the :notifications feature enabled' do
+          before do
+            AlaveteliFeatures.backend.enable_actor(:notifications,
+                                                   info_request.user)
+          end
+
+          it 'notifies the user that a response has been received' do
+            email, raw_email = email_and_raw_email
+
+            # Without this, the user retrieved in the model is not the same one
+            # in memory as this one, so we can't put expectations on it
+            allow(info_request).to receive(:user).and_return(info_request.user)
+            expect(info_request.user).
+              to receive(:notify).with(a_new_response_event_for(info_request))
+
+            info_request.receive(email, raw_email)
+          end
+        end
+
+        context 'and the user has the :notifications feature disabled' do
+          it 'emails the user that a response has been received' do
+            email, raw_email = email_and_raw_email
+
+            info_request.receive(email, raw_email)
+            notification = ActionMailer::Base.deliveries.last
+            expect(notification.to).to include(info_request.user.email)
+            expect(ActionMailer::Base.deliveries.size).to eq(1)
+            ActionMailer::Base.deliveries.clear
+          end
         end
       end
 
