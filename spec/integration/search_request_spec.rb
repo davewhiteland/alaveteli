@@ -111,7 +111,8 @@ describe "When searching" do
     # - boring_request
     # - external_request
     # - anonymous_external_request
-    expect(response.body).to include("FOI requests 1 to #{n} of #{n}")
+    expect(response.body).to include("About #{n} FOI requests found")
+    expect(response.body).to include("FOI requests 1 to #{n} of about #{n}")
   end
 
   it 'correctly recognises feed searches' do
