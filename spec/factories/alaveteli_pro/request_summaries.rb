@@ -22,11 +22,23 @@ FactoryGirl.define do
     association :summarisable , :factory => :info_request
     user :factory => :pro_user
 
-    before(:create) do |summary, evaluator|
+    transient do
+      # Should we fix the duplicated summarisable? (See the after(:build))
+      fix_summarisable true
+    end
+
+    after(:build) do |summary, evaluator|
       # Creating the info_request has the side effect of creating a request
-      # summary automatically, but we want to return the one we've just made
-      summary.summarisable.request_summary.destroy
-      summary.summarisable.request_summary = summary
+      # summary automatically, but we want to return the one we've just made,
+      # unless we're explicitly overriding this feature or one didn't get
+      # created (because we set it to nil perhaps)
+      if summary.summarisable && \
+         summary.summarisable.request_summary && \
+         evaluator.fix_summarisable
+        old_summary = summary.summarisable.request_summary
+        summary.summarisable.request_summary = summary
+        old_summary.destroy
+      end
     end
 
     factory :draft_request_summary do
