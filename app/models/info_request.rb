@@ -514,11 +514,7 @@ class InfoRequest < ActiveRecord::Base
       # Notify the user that a new response has been received, unless the
       # request is external
       unless is_external?
-        # use_notifications means use the notification system for *every*
-        # email related to this request, a means for us to actually turn most
-        # of them off for batch requests. The notifications feature flag is
-        # a way for us to opt other users into the system too.
-        if use_notifications? || feature_enabled?(:notifications, self.user)
+        if use_notifications?
           info_request_event = info_request_events.find_by(
             event_type: 'response',
             incoming_message_id: incoming_message.id
@@ -1689,7 +1685,7 @@ class InfoRequest < ActiveRecord::Base
 
   def set_use_notifications
     if use_notifications.nil?
-      self.use_notifications = !!user.try(:is_notifications_tester?) && \
+      self.use_notifications = feature_enabled?(:notifications, user) && \
                                info_request_batch_id.present?
     end
     return true

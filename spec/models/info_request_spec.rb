@@ -315,23 +315,15 @@ describe InfoRequest do
           FactoryGirl.create(:info_request, use_notifications: true)
         end
 
-        it 'notifies the user regardless of the :notifications feature' do
+        it 'notifies the user that a response has been received' do
           email, raw_email = email_and_raw_email
 
           # Without this, the user retrieved in the model is not the same one
           # in memory as this one, so we can't put expectations on it
           allow(info_request).to receive(:user).and_return(info_request.user)
           expect(info_request.user).
-            to receive(:notify).
-              with(a_new_response_event_for(info_request)).
-                twice
+            to receive(:notify).with(a_new_response_event_for(info_request))
 
-          AlaveteliFeatures.backend.enable_actor(:notifications,
-                                                 info_request.user)
-          info_request.receive(email, raw_email)
-
-          AlaveteliFeatures.backend.disable_actor(:notifications,
-                                                  info_request.user)
           info_request.receive(email, raw_email)
         end
       end
@@ -341,35 +333,14 @@ describe InfoRequest do
           FactoryGirl.create(:info_request, use_notifications: false)
         end
 
-        context 'and the user has the :notifications feature enabled' do
-          before do
-            AlaveteliFeatures.backend.enable_actor(:notifications,
-                                                   info_request.user)
-          end
+        it 'emails the user that a response has been received' do
+          email, raw_email = email_and_raw_email
 
-          it 'notifies the user that a response has been received' do
-            email, raw_email = email_and_raw_email
-
-            # Without this, the user retrieved in the model is not the same one
-            # in memory as this one, so we can't put expectations on it
-            allow(info_request).to receive(:user).and_return(info_request.user)
-            expect(info_request.user).
-              to receive(:notify).with(a_new_response_event_for(info_request))
-
-            info_request.receive(email, raw_email)
-          end
-        end
-
-        context 'and the user has the :notifications feature disabled' do
-          it 'emails the user that a response has been received' do
-            email, raw_email = email_and_raw_email
-
-            info_request.receive(email, raw_email)
-            notification = ActionMailer::Base.deliveries.last
-            expect(notification.to).to include(info_request.user.email)
-            expect(ActionMailer::Base.deliveries.size).to eq(1)
-            ActionMailer::Base.deliveries.clear
-          end
+          info_request.receive(email, raw_email)
+          notification = ActionMailer::Base.deliveries.last
+          expect(notification.to).to include(info_request.user.email)
+          expect(ActionMailer::Base.deliveries.size).to eq(1)
+          ActionMailer::Base.deliveries.clear
         end
       end
 
@@ -3979,26 +3950,31 @@ describe InfoRequest do
   end
 
   describe "setting use_notifications" do
-    context "when user is a notifications tester and it's in a batch" do
+    context "when user has :notifications and it's in a batch" do
       it "sets use_notifications to true" do
-        user = FactoryGirl.create(:notifications_tester_user)
+        user = FactoryGirl.create(:user)
+        AlaveteliFeatures.backend[:notifications].enable_actor user
         public_bodies = FactoryGirl.create_list(:public_body, 3)
-        batch = FactoryGirl.create(:info_request_batch, user: user, public_bodies: public_bodies)
+        batch = FactoryGirl.create(
+          :info_request_batch,
+          user: user,
+          public_bodies: public_bodies)
         batch.create_batch!
         info_request = batch.info_requests.first
         expect(info_request.use_notifications).to be true
       end
     end
 
-    context "when user is a notifications tester and it's not in a batch" do
+    context "when user has :notifications and it's not in a batch" do
       it "sets use_notifications to false" do
-        user = FactoryGirl.create(:notifications_tester_user)
+        user = FactoryGirl.create(:user)
+        AlaveteliFeatures.backend[:notifications].enable_actor user
         info_request = FactoryGirl.create(:info_request, user: user)
         expect(info_request.use_notifications).to be false
       end
     end
 
-    context "when user is not a notification tester and it's in a batch" do
+    context "when user doesn't have :notifications and it's in a batch" do
       it "sets use_notifications to false" do
         public_bodies = FactoryGirl.create_list(:public_body, 3)
         batch = FactoryGirl.create(:info_request_batch, public_bodies: public_bodies)
@@ -4008,7 +3984,7 @@ describe InfoRequest do
       end
     end
 
-    context "when user is not a notification tester and it's not in a batch" do
+    context "when user doesn't have :notifications and it's not in a batch" do
       it "sets use_notifications to false" do
         info_request = FactoryGirl.create(:info_request)
         expect(info_request.use_notifications).to be false
