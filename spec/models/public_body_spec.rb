@@ -344,20 +344,39 @@ describe PublicBody, "when finding_by_tags" do
   end
 end
 
-describe PublicBody, " when making up the URL name" do
-  before do
-    @public_body = PublicBody.new
+describe PublicBody, "updating the URL name" do
+
+  let(:public_body) { PublicBody.new }
+
+  context 'short_name has not been set' do
+
+    it 'updates the url_name when name is changed' do
+      public_body.name = 'Some Authority'
+      expect(public_body.url_name).to eq('some_authority')
+    end
+
+    it 'does not update the url_name if the new body name is invalid' do
+      public_body.name = '1234'
+      expect(public_body.url_name).to eq('body')
+    end
+
   end
 
-  it 'should remove spaces, and make lower case' do
-    @public_body.name = 'Some Authority'
-    expect(@public_body.url_name).to eq('some_authority')
+  context 'short_name has been set' do
+
+    it 'does not update the url_name when name is changed' do
+      public_body.short_name = 'Test Name'
+      public_body.name = 'Some Authority'
+      expect(public_body.url_name).to eq('test_name')
+    end
+
   end
 
-  it 'should not allow a numeric name' do
-    @public_body.name = '1234'
-    expect(@public_body.url_name).to eq('body')
+  it 'updates the url_name when short_name is changed' do
+    public_body.short_name = 'Short Name'
+    expect(public_body.url_name).to eq('short_name')
   end
+
 end
 
 describe PublicBody, " when saving" do
