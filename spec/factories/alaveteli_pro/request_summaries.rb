@@ -36,7 +36,7 @@ FactoryGirl.define do
          summary.summarisable.request_summary && \
          evaluator.fix_summarisable
         old_summary = summary.summarisable.request_summary
-        summary.summarisable.request_summary = summary
+        summary.summarisable.reload.request_summary = summary
         old_summary.destroy
       end
     end
