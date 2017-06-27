@@ -1499,7 +1499,7 @@ class InfoRequest < ActiveRecord::Base
   # Returns boolean
   def embargo_expiring?
     if self.embargo
-      self.embargo.publish_at <= AlaveteliPro::Embargo.expiring_soon_time
+      self.embargo.expiring_notification_at <= Time.zone.now
     else
       false
     end

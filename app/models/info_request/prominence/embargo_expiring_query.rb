@@ -9,7 +9,7 @@ class InfoRequest
       def call
         @relation.includes(:embargo)
           .where('embargoes.id IS NOT NULL')
-            .where("embargoes.publish_at <= ?", AlaveteliPro::Embargo.expiring_soon_time)
+            .where("embargoes.expiring_notifiction_at <= ?", Time.zone.now)
               .references(:embargoes)
       end
     end

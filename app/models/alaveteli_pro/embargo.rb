@@ -39,7 +39,9 @@ module AlaveteliPro
       "12_months" => Proc.new { TWELVE_MONTHS }
     }.freeze
 
-    scope :expiring, -> { where("publish_at <= ?", expiring_soon_time) }
+    def self.expiring
+      where("expiring_notification_at <= ?", Time.zone.now)
+    end
 
     def set_default_duration
       self.embargo_duration  ||= "3_months"
@@ -67,10 +69,6 @@ module AlaveteliPro
 
     def calculate_expiring_notification_at
       self.publish_at - 1.week
-    end
-
-    def self.expiring_soon_time
-      Time.zone.now + 1.week
     end
 
     def self.expire_publishable
