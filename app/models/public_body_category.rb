@@ -56,7 +56,7 @@ PublicBodyCategory::Translation.class_eval do
   end
 
   def default_locale?
-    locale == I18n.default_locale
+    locale.to_sym == FastGettext.default_locale.to_sym
   end
 
   def required_attribute_submitted?
